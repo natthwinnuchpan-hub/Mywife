@@ -97,68 +97,6 @@ html.gate-lock, body.gate-lock{
   margin:0;
 }
 
-/* bullet holes */
-#gate .holes{
-  position:absolute; left:50%; top:50%;
-  width:min(60vw,420px); height:min(60vw,420px);
-  transform:translate(-50%,-50%);
-  z-index:3;
-  pointer-events:none;
-  overflow:visible;
-}
-#gate .hole{
-  opacity:0;
-  transform-box: fill-box;
-  transform-origin:center;
-}
-#gate .hole.hit{
-  animation: gateHoleIn .55s cubic-bezier(.2,.9,.3,1) forwards;
-}
-@keyframes gateHoleIn{
-  0%{ opacity:0; transform:scale(2.6); }
-  35%{ opacity:1; transform:scale(0.85); }
-  65%{ transform:scale(1.08); }
-  100%{ opacity:1; transform:scale(1); }
-}
-#gate .flash{ opacity:0; }
-#gate .hole.hit .flash{
-  animation: gateFlashOut .28s ease-out forwards;
-}
-@keyframes gateFlashOut{
-  0%{ opacity:.95; }
-  100%{ opacity:0; }
-}
-#gate .crack{ stroke:#8B0000; stroke-linecap:round; fill:none; opacity:.85; }
-#gate .core{ fill:#050202; }
-#gate .rim{ fill:none; stroke:#8B0000; stroke-width:0.6; opacity:.55; }
-
-#gate .spark{
-  fill:#ffb26a;
-  opacity:0;
-  transform-box: fill-box;
-  transform-origin:center;
-  animation: gateSpark .6s ease-out forwards;
-}
-@keyframes gateSpark{
-  0%{ opacity:1; transform:translate(0,0) scale(1); }
-  60%{ opacity:.9; }
-  100%{ opacity:0; transform:translate(var(--dx),var(--dy)) scale(0.25); }
-}
-
-#gate .glowpulse{
-  fill:none;
-  stroke:#ff8a4c;
-  stroke-width:2;
-  opacity:0;
-  transform-box: fill-box;
-  transform-origin:center;
-  animation: gateGlowPulse .5s ease-out forwards;
-}
-@keyframes gateGlowPulse{
-  0%{ opacity:.85; transform:scale(0.2); }
-  100%{ opacity:0; transform:scale(3.2); }
-}
-
 /* skip hint */
 #gate .skip{
   position:fixed; bottom:22px; left:50%; transform:translateX(-50%);
