@@ -235,11 +235,55 @@
     setTimeout(startHoles, 320);
   });
 
-  // ---- bullet holes ----
+  // ---- bullet holes: randomize position each load, add spark burst ----
+  function randomizeHolePositions(){
+    const cx=210, cy=210, minR=55, maxR=140, minDist=95;
+    const placed = [];
+    holes.forEach(h=>{
+      let x,y,ok,tries=0;
+      do{
+        const a = Math.random()*Math.PI*2;
+        const r = minR + Math.random()*(maxR-minR);
+        x = cx + Math.cos(a)*r;
+        y = cy + Math.sin(a)*r;
+        ok = placed.every(p => Math.hypot(p.x-x,p.y-y) >= minDist);
+        tries++;
+      }while(!ok && tries<30);
+      placed.push({x,y});
+      h.setAttribute('transform', `translate(${x.toFixed(1)},${y.toFixed(1)})`);
+    });
+  }
+
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  function spawnSparks(holeEl){
+    const n = 9 + Math.floor(Math.random()*4);
+    for(let i=0;i<n;i++){
+      const ang = Math.random()*Math.PI*2;
+      const dist = 20 + Math.random()*30;
+      const dot = document.createElementNS(SVG_NS,'circle');
+      dot.setAttribute('r', (Math.random()*1.7+0.9).toFixed(2));
+      dot.setAttribute('cx',0); dot.setAttribute('cy',0);
+      dot.classList.add('spark');
+      dot.style.setProperty('--dx', (Math.cos(ang)*dist).toFixed(1)+'px');
+      dot.style.setProperty('--dy', (Math.sin(ang)*dist).toFixed(1)+'px');
+      dot.style.animationDelay = (Math.random()*30)+'ms';
+      holeEl.appendChild(dot);
+      setTimeout(()=>dot.remove(), 750);
+    }
+    const pulse = document.createElementNS(SVG_NS,'circle');
+    pulse.setAttribute('r', 16);
+    pulse.setAttribute('cx',0); pulse.setAttribute('cy',0);
+    pulse.classList.add('glowpulse');
+    holeEl.appendChild(pulse);
+    setTimeout(()=>pulse.remove(), 550);
+  }
+
   function startHoles(){
+    randomizeHolePositions();
     holes.forEach((h,i)=>{
       setTimeout(()=>{
         h.classList.add('hit');
+        spawnSparks(h);
         gate.classList.remove('shake'); void gate.offsetWidth; gate.classList.add('shake');
       }, i*230);
     });
@@ -348,18 +392,18 @@
         ctx.filter = 'none';
         ctx.restore();
 
-        // ember particles rising off the burn line
+        // ember particles rising off the burn line — dense, warm, layered
         if(t < 0.94){
-          for(let k=0;k<2;k++){
+          for(let k=0;k<6;k++){
             const p = pts[Math.floor(Math.random()*pts.length)];
             particles.push({
-              x: p.x + (Math.random()*10-5),
-              y: p.y,
-              vx: (Math.random()*0.6-0.3),
-              vy: -(Math.random()*1.6+0.6),
+              x: p.x + (Math.random()*16-8),
+              y: p.y + (Math.random()*6-3),
+              vx: (Math.random()*1.2-0.6),
+              vy: -(Math.random()*2.4+0.7),
               life: 0,
-              maxLife: 380 + Math.random()*380,
-              r: Math.random()*1.6+0.6
+              maxLife: 320 + Math.random()*460,
+              r: Math.random()*2.6+1
             });
           }
         }
@@ -367,14 +411,17 @@
         ctx.globalCompositeOperation = 'lighter';
         particles.forEach(p=>{
           p.life += 16;
-          p.x += p.vx; p.y += p.vy; p.vy *= 0.985;
+          p.x += p.vx; p.y += p.vy; p.vy *= 0.98; p.vx *= 0.99;
           const lt = p.life/p.maxLife;
           if(lt >= 1) return;
-          const alpha = (1-lt) * 0.85;
-          const hue = lt < 0.5 ? 'rgba(255,150,90,' : 'rgba(139,0,0,';
-          ctx.fillStyle = hue + alpha + ')';
+          const alpha = (1-lt) * 0.95;
+          let color;
+          if(lt < 0.28) color = `rgba(255,214,140,${alpha})`;      // hot golden core
+          else if(lt < 0.6) color = `rgba(255,120,60,${alpha})`;   // ember orange
+          else color = `rgba(139,0,0,${alpha})`;                   // cooling to blood red
+          ctx.fillStyle = color;
           ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r*(1-lt*0.4), 0, Math.PI*2);
+          ctx.arc(p.x, p.y, p.r*(1-lt*0.5), 0, Math.PI*2);
           ctx.fill();
         });
         ctx.restore();
